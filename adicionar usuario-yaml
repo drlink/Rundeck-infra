@@ -1,0 +1,49 @@
+- defaultTab: nodes
+  description: adiciona um usuario e sua chave ssh
+  executionEnabled: true
+  id: 73ce0215-9f61-4a70-8bf4-a5417fac5c1c
+  loglevel: INFO
+  name: adicionar usuario
+  nodeFilterEditable: false
+  nodefilters:
+    dispatch:
+      excludePrecedence: true
+      keepgoing: true
+      rankOrder: ascending
+      successOnEmptyNodeFilter: false
+      threadcount: '5'
+    filter: .*
+  nodesSelectedByDefault: true
+  options:
+  - description: Nome do Usuario
+    label: usuario
+    name: user
+    regex: '[-_a-z.]{2,}'
+    required: true
+  - description: Chave Publica do SSH
+    label: Chave SSH
+    name: key
+    regex: 'ssh-rsa AAAA[0-9A-Za-z+/]+[=]{0,3} ([^@]+@[^@]+){0,1}'
+    required: true
+  plugins:
+    ExecutionLifecycle: null
+  scheduleEnabled: true
+  sequence:
+    commands:
+    - description: Adiciona um usuario no sistema
+      errorhandler:
+        exec: getent passwd ${option.user}
+        keepgoingOnSuccess: true
+      exec: sudo useradd -m -d /home/${option.user} -s /bin/bash ${option.user}
+    - description: Verifica se a chave existe se não existe insera a chave
+      fileExtension: .sh
+      interpreterArgsQuoted: true
+      script: "#!/bin/bash\n\nsu -c 'mkdir -p ~/.ssh' @option.user@\n\ngrep \"@option.key@\"\
+        \ /home/@option.user@/.ssh/authorized_keys > /dev/nul\n\nif [ $? != 0 ]; then\n\
+        \n    su -c 'echo \"@option.key@\" >> ~/.ssh/authorized_keys' @option.user@\n\
+        else \n\n    echo 'chave já existe'\nfi "
+      scriptInterpreter: sudo
+    keepgoing: false
+    strategy: node-first
+  uuid: 73ce0215-9f61-4a70-8bf4-a5417fac5c1c
+

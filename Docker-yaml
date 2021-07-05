@@ -2,7 +2,7 @@
   description: Instala o docker em maquinas debian
   executionEnabled: true
   id: ef824b24-419e-4748-b2d1-fcdb3cd20ed7
-  loglevel: INFO #
+  loglevel: INFO
   name: Docker
   nodeFilterEditable: false
   nodefilters:

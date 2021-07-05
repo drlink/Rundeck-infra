@@ -40,8 +40,6 @@
       script: |-
         #!/bin/bash
 
-        exit 1
-
         source /etc/os-release # ID = centos,debian, NAME
 
         function _debian {
@@ -62,6 +60,8 @@
       scriptInterpreter: sudo
     - description: testa a conexão com o banco
       exec: '"sudo mysql -e ''SELECT VERSION()''"'
+    - description: 'Verifica o hostname da maquina '
+      exec: '"sudo mysql -e ''SELECT @@HOSTNAME''"'
     keepgoing: false
     strategy: node-first
   uuid: mysql-install

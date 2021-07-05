@@ -1,0 +1,68 @@
+- defaultTab: nodes
+  description: Instala o mysql em maquinas debian ou cetos
+  executionEnabled: true
+  id: mysql-install
+  loglevel: INFO
+  name: Mysql
+  nodeFilterEditable: false
+  nodefilters:
+    dispatch:
+      excludePrecedence: true
+      keepgoing: false
+      rankOrder: ascending
+      successOnEmptyNodeFilter: false
+      threadcount: '1'
+    filter: 'tags: database'
+  nodesSelectedByDefault: true
+  notification:
+    onfailure:
+      plugin:
+        configuration:
+          botAuthToken: 1852811229:AAFf7O_p9WG27cjC1LuH8ACLaxTlHjPZYAQ
+          chatId: '-506572999'
+          includeJobLog: 'true'
+          telegramApiBaseUrl: https://api.telegram.org
+          telegramProperties: /etc/rundeck/telegram.properties
+          templateDir: /var/lib/rundeck/templates
+          templateMessage: |-
+            ${job.project}: ${job.name}
+            Status: ${status} (${context.job.execid})
+        type: TelegramNotification
+  notifyAvgDurationThreshold: null
+  plugins:
+    ExecutionLifecycle: null
+  scheduleEnabled: true
+  sequence:
+    commands:
+    - description: Instalando o mysql
+      fileExtension: .sh
+      interpreterArgsQuoted: false
+      script: |-
+        #!/bin/bash
+
+        source /etc/os-release # ID = centos,debian, NAME
+
+        function _debian {
+            dpkg -l | grep mariadb-server > /dev/null
+            test $? -eq 0 && return
+            apt-get update && apt-get install -y mariadb-server
+        }
+
+        function _centos {
+            rpm -qa | grep mariadb-server > /dev/null
+            test $? -eq 0 && return
+            dnf install -y mariadb-server
+            systemctl start mariadb
+            systemctl enable mariadb
+        }
+
+        _$ID # executa _debian ou _centos
+      scriptInterpreter: sudo
+    - description: testa a conexão com o banco
+      exec: '"sudo mysql -e ''SELECT VERSION()''"'
+    - description: 'Verifica o hostname da maquina '
+      exec: '"sudo mysql -e ''SELECT @@HOSTNAME''"'
+    keepgoing: false
+    strategy: node-first
+  uuid: mysql-install
+
